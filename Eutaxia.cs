@@ -97,7 +97,7 @@ namespace Eutaxia
     }
 
     [Serializable]
-    public class Thing : IThing
+    public class Thing : IRecursiveThing
     {
         public string name;
         public float[] coordinates;
@@ -199,120 +199,25 @@ namespace Eutaxia
         {
             coordinates[_dimension] = coordinates[_dimension] + _increment;
         }
-
-        public RecursiveThing ToRecursiveThing()
+        public float FindDistance(Thing _thing1, Thing _thing2)
         {
-            RecursiveThing placeHolder =new RecursiveThing();
-            placeHolder.coordinates = coordinates;
-            placeHolder.name = name;
-            return placeHolder;
-        }
-
-    }
-    [Serializable]
-    public class RecursiveThing : IRecursiveThing
-    {
-        public string name;
-        public float[] coordinates;
-
-        public RecursiveThing()
-        {
-            coordinates = new float[9] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            name = "";
-        }
-        
-        //IPoint
-        public void SetCoordinates(float[] _coordinates)
-        {
-            coordinates = _coordinates;
-        }
-        public float[] GetCoordinates()
-        {
-            return coordinates;
-        }
-        public void ToMapping(Mapping<float[], RecursiveThing> _target)
-        {
-            _target.AddToMap(coordinates, this);
-        }
-        public void ToMapping(Mapping<float[], RecursiveThing> _target, List<RecursiveThing> _things)
-        {
-            foreach (RecursiveThing T in _things)
+            int counter = 0;
+            float sum = 0f;
+            float square = 0f;
+            if (_thing1.GetCoordinates().Length == _thing2.GetCoordinates().Length)
             {
-                T.ToMapping(_target);
+                for (counter = 0; counter < _thing1.coordinates.Length; counter++)
+                {
+                    square = Math.Abs(_thing1.GetCoordinates()[counter] - _thing2.GetCoordinates()[counter]);
+                    sum += square;
+                }
             }
-        }
-
-        //IThing
-        public float[] GetPosition()
-        {
-            float[] output = new float[3];
-            output[0] = coordinates[0];
-            output[1] = coordinates[1];
-            output[2] = coordinates[2];
-            return output;
-        }
-        public float[] GetPhase()
-        {
-            float[] output = new float[3];
-            output[0] = coordinates[3];
-            output[1] = coordinates[4];
-            output[2] = coordinates[5];
-            return output;
-        }
-        public float[] GetExtra()
-        {
-            float[] output = new float[3];
-            output[0] = coordinates[6];
-            output[1] = coordinates[7];
-            output[2] = coordinates[8];
-            return output;
-        }
-
-        public void SetPosition(float _x, float _y, float _z)
-        {
-            coordinates[0] = _x;
-            coordinates[1] = _y;
-            coordinates[2] = _z;
-        }
-        public void SetPosition(float[] _position)
-        {
-            coordinates[0] = _position[0];
-            coordinates[1] = _position[1];
-            coordinates[2] = _position[2];
-
-        }
-
-        public void SetPhase(float _x, float _y, float _z)
-        {
-            coordinates[3] = _x;
-            coordinates[4] = _y;
-            coordinates[5] = _z;
-        }
-        public void SetPhase(float[] _phase)
-        {
-            coordinates[3] = _phase[0];
-            coordinates[4] = _phase[1];
-            coordinates[5] = _phase[2];
-
-        }
-
-        public void SetExtra(float _x, float _y, float _z)
-        {
-            coordinates[6] = _x;
-            coordinates[7] = _y;
-            coordinates[8] = _z;
-        }
-        public void SetExtra(float[] _position)
-        {
-            coordinates[6] = _position[0];
-            coordinates[7] = _position[1];
-            coordinates[8] = _position[2];
-
-        }
-
-        public void IncrementDimension(int _dimension, float _increment)
-        {
-            coordinates[_dimension] = coordinates[_dimension] + _increment;
+            else
+            {
+                Debug.Log("Thing Coordinates are unequal!");
+                return 0f;
+            }
+            return (float)Math.Sqrt(sum);
         }
 
         //IRecursion
@@ -323,28 +228,178 @@ namespace Eutaxia
         public void Recur(int _frequency)
         {
             int counter = 0;
-            for(counter=0;counter<_frequency;counter++)
+            for (counter = 0; counter < _frequency; counter++)
             {
                 Iterate();
             }
         }
 
-    }
 
-    namespace WorldBuilder
+    }
+    
+    namespace DesignPatterns
     {
-        
-        public class World<T>
+        public class Singleton : Thing
         {
-            public List<T> Dominion;
-            public Mapping<float[], T> Domain;    
-         
+            // A class with a single instantiate used to Manage Data,etc.
+            public Singleton()
+            {
+
+            }
         }
 
-        public class Universe<T>
+        public class Factory
         {
-         public List<World<T>> worlds;
+            //A class that is used to build object quick i.e. Shape Factory
+
+            public Factory()
+            {
+
+            }
+        }
+
+        public class AbstractFactory
+        {
+            //A class that creates families of objects
+            //Encapsulates a group of individual Factory with common theme
+            public List<Factory> factories;
+
+            public AbstractFactory()
+            {
+
+            }
+        }
+
+        public class Recipe<T1,T2>
+        {
+            public T1 result;
+            public List<T2> ingredients;
+
+            private class Part<T2>
+            {
+                T2 type;
+            }
+
+            public void CookIngredients()
+            {
+                foreach (T2 i in ingredients)
+                {
+
+                }
+        
+            }
+
+        }
+        public class Builder<T>
+
+        {
+            //builds a complex objects
+            public T result;
+
+            public void Build()
+            {
+               
+            }
         }
     }
+    namespace ClientServerModel
+    {
+        public interface IClient
+        {
+            void SendRequest(Server _server);
+            Request GetRequest();
+            void SetRequest(Request _request);
+        }
+        public abstract class Client : IClient
+        {
+            private Request request;
 
+            public virtual void SendRequest(Server _Server)
+            {
+                
+            }
+
+            public Request GetRequest()
+            {
+                return request;
+            }
+            public void SetRequest(Request _request)
+            {
+                request = _request;
+            }
+        }
+
+        public interface IServer
+        {
+            void HandleRequest(Request _request);
+            void HandleRequestQueue();
+            Queue<Request> GetRequestQueue();
+
+        }
+        public abstract class Server : IServer
+        {
+            private Queue<Request> requestQueue
+            {
+                get { return RequestQueue; }
+            }
+
+            public Server()
+            {
+               
+            }
+
+            public virtual void HandleRequest(Request _request)
+            {
+                
+            }
+            public virtual void HandleRequestQueue()
+            {
+
+            }
+
+            public Queue<Request> GetRequestQueue()
+            {
+                return requestQueue;
+            }
+            
+        }
+
+        public interface IRequest
+        {
+            string GetInquiry();
+        }
+        public abstract class Request : IRequest
+        {
+            private string inquiry;
+
+            public Request()
+            {
+
+            }
+
+            public string GetInquiry()
+            {
+                return inquiry;
+            }
+
+
+        }
+
+        public interface INetwork
+        {
+            void AddClient(Client _client);
+            void AddServer(Server _server);
+            void SendRequestFrom(Client _client, Server _server);
+        }
+        public abstract class Network
+        {
+            public List<Client> clientList;
+            public List<Server> serverList;
+
+            public Network()
+            {
+
+            }
+        }
+    }
 }
